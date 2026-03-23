@@ -13,7 +13,6 @@ test("Client App E2E Tests", async ({browser, page})=>
 
     await page1.goto("https://rahulshettyacademy.com/client")
     await expect(page1).toHaveTitle("Let's Shop")
-
     await page1.locator("#userEmail").fill(email)
     await page1.locator("#userPassword").fill(password)
     await page1.locator("#login").click()

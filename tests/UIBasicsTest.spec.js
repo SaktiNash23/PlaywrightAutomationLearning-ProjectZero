@@ -99,7 +99,7 @@ test.only("Handling Child Windows", async ({browser, page})=>
     Inside this Promise.all() we repeatedly run a set of actions related to opening the new tab. 
     The 1st action is to create a Listener, the purpose is to monitor/watch for an action that opens a new tab/window
     The 2nd action is action that opens the new tab/window
-    Only when all the above actions in the Promise/all() are fulfilled, then the code will proceed to the next lines
+    Only when all the above actions in the Promise.all() are fulfilled, then the code will proceed to the next lines
 
     Three Promise states:
     1. Promise Pending

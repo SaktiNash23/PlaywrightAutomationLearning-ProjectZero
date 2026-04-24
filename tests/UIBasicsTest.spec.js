@@ -10,7 +10,7 @@
 
 */
 
-test("Login - Rahul Shetty Academy", async ({page})=>
+test.only("Login - Rahul Shetty Academy", async ({page})=>
 {
     await page.goto("https://rahulshettyacademy.com/loginpagePractise/")
     await expect(page).toHaveTitle("LoginPage Practise | Rahul Shetty Academy")
@@ -23,7 +23,7 @@ test("Login - Rahul Shetty Academy", async ({page})=>
     
     //Login with correct credentials
     await page.locator("#username").fill("rahulshettyacademy")
-    await page.locator("#password").fill("learning")
+    await page.locator("#password").fill("Learning@830$3mK2")
     await page.locator("#signInBtn").click()
     //console.log(await page.locator("h4.card-title").first().textContent())//Get the title of the first item in the store
 
@@ -83,7 +83,7 @@ test("Dropdowns, Radio Buttons & Checkboxes", async ({page})=>
 
 });
 
-test.only("Handling Child Windows", async ({browser, page})=>
+test("Handling Child Windows", async ({browser, page})=>
 {
     const context = await browser.newContext()
     const page1 = await context.newPage()

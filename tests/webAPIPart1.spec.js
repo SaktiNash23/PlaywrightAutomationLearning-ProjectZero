@@ -1,4 +1,4 @@
-const {test, expect, request} = require('@playwright/test');//request "fixture" is needed to work with API testing
+const {test, expect, request} = require('@playwright/test');//request library is needed to work with API testing
 const {APIUtils} = require('./utils/APIUtils');//Importing the APIUtils class
 
 
@@ -13,9 +13,18 @@ let orderID_Global = ""
 //.beforeEach executes each time before the start of each test case
 test.beforeEach(async ()=>{});
 
-//.beforeAll() executes first, before every other test case is executed
+//.beforeAll() executes first, before every other test case is executed. But executes only ONCE
 test.beforeAll(async ()=>
 {
+    //const api_context = await request.newContext()
+    //const loginResponse = await api_context.post("https://rahulshettyacademy.com/api/ecom/auth/login", {data: loginPayload})
+    //expect(loginResponse.ok()).toBeTruthy()//Check if the response is OK (200)
+    //const loginJSON = await loginResponse.json()//This is the response body in JSON format. We need to extract the token from this response body
+    //const loginToken = loginJSON.token//Extract the token from the response body
+
+    const loginResponseBody = await loginResponse.json()
+    tokenGlobal = loginResponseBody.token
+
     const apiContext = await request.newContext()//The API context MUST be created in your actuaal test script, not in the APIUtils class, because we need to pass the actual API Context to the Class constructor
     const apiUtils = new APIUtils(apiContext, loginPayload)
     apiUtils.createOrder(payloadCreateOrder)

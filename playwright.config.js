@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: 'UIBasicsTest.spec.js',
+  testMatch: 'webAPIPart1.spec.js',
   timeout: 50 * 1000,
   expect:{timeout: 5*1000}, 
   reporter: 'html',

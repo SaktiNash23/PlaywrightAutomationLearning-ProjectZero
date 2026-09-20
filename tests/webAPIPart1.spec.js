@@ -2,8 +2,12 @@ const {test, expect, request} = require('@playwright/test');//request library is
 const {APIUtils} = require('./utils/APIUtils');//Importing the APIUtils class
 
 
+
 //This is JSON information from the login network call's Payload tab. Needed for the POST request in the Login process
 const loginPayload = {userEmail: "sativel@hotmail.com",userPassword: "Newpassword1"}
+const orderPayload = {orders: [{country: "Bahamas", productOrderedId: "6960eac0c941646b7a8b3e68"}]}
+let orderID
+/*
 const createOrderPayload = {orders: [{country: "Bahamas", productOrderedId: "6960eac0c941646b7a8b3e68"}]}
 
 //Tokens (might not need it after the refactor)
@@ -20,7 +24,7 @@ test.beforeAll(async ()=>
     const loginResponse = await api_context.post("https://rahulshettyacademy.com/api/ecom/auth/login", {data: loginPayload})//Send a POST request and retrieve the response. The POST request is sent to the Login API URL, and the Payload is passed in the data parameter
     expect(loginResponse.ok()).toBeTruthy()//Check if the response is OK (200)
     const loginJSON = await loginResponse.json()//This is the response body in JSON format. We need to extract the token from this response body
-    const loginToken = loginJSON.token//Extract the token from the response body
+    const loginToken = await loginJSON.token//Extract the token from the response body
     const loginResponseBody = await loginResponse.json()
     tokenGlobal = loginResponseBody.token
 
@@ -47,13 +51,13 @@ test.beforeAll(async ()=>
 
 test("Client App E2E Tests w/ auto-Login via API call", async ({page})=>
 {
-    /*
+    
     .addInitScript() takes 1 function and 1 argument:
     value => .... This is the function
     ,tokenGlobal... This is the argument
 
     The purpose of the addInitScript() is to add the token to the browser's localStorage so that we don't need to write the code for Login everytime
-    */
+    
     await page.addInitScript(value => 
     {window.localStorage.setItem("token", value)
 
@@ -87,11 +91,83 @@ test("Client App E2E Tests w/ auto-Login via API call", async ({page})=>
     await page.pause()
 });
 
+*/
+
 //Verify if order created is appearing in Order List via the Order ID
 //Precondition: Create an order
-//But by using APIs we won't repeat the steps to create an order manually, we will call the API that handles Creating Orders, so we can skip most of the steps and directly check the Order ID
+//But by using APIs we won't need to repeat the steps to create an order manually, we will call the API that handles Creating Orders, so we can skip most of the steps and directly check the Order ID
 
 //Request URL for Create Order: https://rahulshettyacademy.com/api/ecom/order/create-order
 //Payload for Create Order: {"orders":[{"country":"Malaysia","productOrderedId":"6960eae1c941646b7a8b3ed3"}]}
 //Authorization Header: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTAyOWY0ZGY2NjlkNmNiMGEzNTMyYWUiLCJ1c2VyRW1haWwiOiJzYXRpdmVsQGhvdG1haWwuY29tIiwidXNlck1vYmlsZSI6MTIzNDU2Nzg5MCwidXNlclJvbGUiOiJjdXN0b21lciIsImlhdCI6MTc3NDIzNjQyMywiZXhwIjoxODA1Nzk0MDIzfQ.Ap7saBlaobnXAps31togrGT64brUQJn78VwAyQn6NSc
 //Content Type: application/json
+
+
+
+
+//FOR UDEMY FOLLOW-ALONG
+
+let tokenGlobal = ""
+
+test.beforeAll(async ()=>
+{
+    //Login API
+   const apiContext = await request.newContext()
+   const loginResponse = await apiContext.post("https://rahulshettyacademy.com/api/ecom/auth/login", {data: loginPayload})
+   await expect(loginResponse.ok()).toBeTruthy()
+   const loginJSON = await loginResponse.json()
+   tokenGlobal = loginJSON.token
+   console.log("Login Token: " + tokenGlobal)
+
+   const orderResponse = await apiContext.post("https://rahulshettyacademy.com/api/ecom/order/create-order",
+    {
+        data: orderPayload,
+        headers:
+        {
+            "Authorization": tokenGlobal,
+            "Content-Type": "application/json"
+        }
+    })
+
+    const orderResponseJSON = await orderResponse.json()
+    orderID = orderResponseJSON.orders[0]
+
+
+});
+
+
+
+test("Client App E2E Tests w/ API", async ({browser, page})=>
+{
+
+    await page.addInitScript(value =>
+    {
+        window.localStorage.setItem("token", value);
+    },  tokenGlobal);
+
+    await page.goto("https://rahulshettyacademy.com/client/")
+
+    //ORDERS PAGE
+    await page.locator("button[routerlink*='myorders']").click()
+    await page.locator("div h1.ng-star-inserted").waitFor()
+    const orderList = page.locator("tr.ng-star-inserted")
+    const orderListCount = await orderList.count()
+
+    for(let i = 0; i < orderListCount; i++)
+    {
+        let rowOrderID = await orderList.locator("th").nth(i).textContent()
+        if(orderID.includes(rowOrderID))
+        {
+            console.log(await orderList.locator("th").nth(i).textContent())
+            await orderList.locator("td button.btn").first().click()
+            break;
+        }
+    }
+
+    const orderIdDetails = await page.locator("div.col-text").textContent()
+    expect(orderID.includes(orderIdDetails)).toBeTruthy()
+
+    await page.pause()
+
+});
+

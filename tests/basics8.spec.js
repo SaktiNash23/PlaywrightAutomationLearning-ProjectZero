@@ -1,11 +1,10 @@
-const Person = require("./basics7.spec");//To ensure that the child class can access the properties and methods of the parent class, we need to import the parent class in the child class file. This is done using the require() function. The require() function is used to import modules, JSON, and local files. In this case, we are importing the Person class from the basics7.spec.js file.
-
+const Person = require("./basics7.spec");//To ensure that the child class can access the properties and methods of the parent class, we need to import the parent class in the child class file.
 class Pet extends Person //"extends" keyword is needed to inherit the properties and methods of the parent class. In this case, Pet class inherits from Person class.
 {
-    //If Parent class has a Constructor, then the child class must have a constructor as well.
+    //If Parent class has a Constructor, then the child class MUST HAVE a constructor as well.
     constructor(firstName, lastName)
     {
-        //Rule: You have the call the Parent class constructor as the FIRST STEP in your child class constructor. This is done using the "super" keyword. The super() function is used to call the constructor of the parent class. In this case, we are calling the constructor of the Person class.
+        //Rule: You MUST call the Parent class constructor as the FIRST STEP in your child class constructor. This is done using the "super" keyword.
         super(firstName, lastName)
     }
 

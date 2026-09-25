@@ -1,4 +1,4 @@
-module.exports = class Person //module.exports makes it Public so that it can be used in other files.
+module.exports = class Person //module.exports makes the Parent Class Public so that it can be used in other files.
 {
      //Constructor is method that executes by default everytime an object is created.
     constructor(firstName, lastName)

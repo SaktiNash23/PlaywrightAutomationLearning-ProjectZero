@@ -1,12 +1,12 @@
-const {test, expect, request} = require('@playwright/test');//request library is needed to work with API testing
-const {APIUtils} = require('./utils/APIUtils');//Importing the APIUtils class
-
+const {test, expect, request} = require('@playwright/test');//"request" library is needed to work with API testing
+const {APIUtils} = require('./utils/APIUtils');//Importing the APIUtils class so we can create new objects of APIUtils class
 
 
 //This is JSON information from the login network call's Payload tab. Needed for the POST request in the Login process
 const loginPayload = {userEmail: "sativel@hotmail.com",userPassword: "Newpassword1"}
 const orderPayload = {orders: [{country: "Bahamas", productOrderedId: "6960eac0c941646b7a8b3e68"}]}
 let orderID
+
 /*
 const createOrderPayload = {orders: [{country: "Bahamas", productOrderedId: "6960eac0c941646b7a8b3e68"}]}
 
@@ -106,33 +106,14 @@ test("Client App E2E Tests w/ auto-Login via API call", async ({page})=>
 
 
 //FOR UDEMY FOLLOW-ALONG
-
-let tokenGlobal = ""
-
 test.beforeAll(async ()=>
 {
-    //Login API
-   const apiContext = await request.newContext()
-   const loginResponse = await apiContext.post("https://rahulshettyacademy.com/api/ecom/auth/login", {data: loginPayload})
-   await expect(loginResponse.ok()).toBeTruthy()
-   const loginJSON = await loginResponse.json()
-   tokenGlobal = loginJSON.token
-   console.log("Login Token: " + tokenGlobal)
+    const apiContext = await request.newContext() //The step to create a new API context must be done in the actual test script, not in the APIUtils class, because we need to pass the actual API Context to the Class constructor
 
-   const orderResponse = await apiContext.post("https://rahulshettyacademy.com/api/ecom/order/create-order",
-    {
-        data: orderPayload,
-        headers:
-        {
-            "Authorization": tokenGlobal,
-            "Content-Type": "application/json"
-        }
-    })
+    const apiUtils = new APIUtils(loginPayload, apiContext) //Create a new object of the APIUtils class, and pass the loginPayload and apiContext to the constructor of the APIUtils class
+    apiUtils.createOrder(orderPayload) //Call the createOrder() method of the APIUtils class, and pass the orderPayload to it. This will create an order and return the order ID
 
-    const orderResponseJSON = await orderResponse.json()
-    orderID = orderResponseJSON.orders[0]
-
-
+    
 });
 
 

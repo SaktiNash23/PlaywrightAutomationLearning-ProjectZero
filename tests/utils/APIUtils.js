@@ -1,70 +1,49 @@
 class APIUtils
 {
-    constructor(apiContext, loginPayload)
+
+    constructor(loginPayload, apiContext)
     {
-        this.apiContext = apiContext
-        this.loginPayload = loginPayload
-
         /*
-        Why are we using "this" operator here?
-
-        Because when the class constructor get the parameters for apiContext and loginPayload, they exist only within the scope of the constructor ONLY
-        But  we need to use the apiContext and loginPayload in the other functions of this class (e.g. getToken(), createOrder())
-        In order to do that, we assign it to to the same variable name but with a this. operator
-
-        By doing so, we are effectively allowing the entire class to have access to the variables, so now any function can use apiContext and loginPayload that we passed from the main test script
-        Even though we declared using this operator in the Constructor, make sure to still use the "this" operator when calling the variable in the other functions below
+        the RHS apiContext is the actual API Context that is passed from the test script. Think of the RHS as a foreigner who can't communicate with the locals, so we need to assign it to a local variable (the LHS apiContext)
+        The LHS apiContext is the local variable of this APIUtils class. It helps the foreigner (RHS apiContext) to communicate with the locals (the rest of the APIUtils class)
         */
+        this.loginPayload = loginPayload
+        this.apiContext = apiContext
     }
+
 
     async getToken()
     {
-        //LOGIN API
-        const loginResponse = await this.apiContext.post("https://rahulshettyacademy.com/api/ecom/auth/login", {data:this.loginPayload})
-        const loginResponseJSON = await loginResponse.json()//Retrieve the login response's JSON
-        const loginResponseToken = await loginResponseJSON.token//From the login response JSON, retrieve the token. This is the token that is saved in "Inspect Element > Application > Local Storage". Needed for bypassing the Login process
-        token = loginResponseToken
-        console.log("Token: "+ token)
+        //Login API
+        const loginResponse = await this.apiContext.post("https://rahulshettyacademy.com/api/ecom/auth/login", {data: this.loginPayload})
+        await expect(loginResponse.ok()).toBeTruthy()
+        const loginJSON = await loginResponse.json()
+        const token = loginJSON.token
+        console.log("Login Token: " + token)
 
         return token;
     }
 
-    async createOrder(payloadCreateOrder)
+    async createOrder(orderPayload)
     {
-        //CREATE ORDER API
-        const createOrderResponse = await this.apiContext.post("https://rahulshettyacademy.com/api/ecom/order/create-order", 
+        this.orderPayload = orderPayload
+        const orderResponse = await this.apiContext.post("https://rahulshettyacademy.com/api/ecom/order/create-order",
         {
-            data:payloadCreateOrder,
+            data: this.orderPayload,
             headers:
             {
-                /*Explanation of the headers:
-                
-                Authorization:
-                This header is retrieved from DevTools > Network > Headers > Request headers dropdown section
-                The Authorization header holds a token
-                The purpose of the Authorization header is that we need to script which account/profile to call the Create Order Response in.
-                We can call the header yes, but then how are we going to tell the script to create the Order in a specific user's profile? That's where Authorization Header comes in
-                So we already have the getToken() function in APIUtils class to find and return the token, so just call it with this.getToken()
-                
-                Content-Type:
-                This header is retrieved from DevTools > Network > Headers > Request headers dropdown section
-                The purpose of Content-Type is sometimes in some websites, the Response might return in a non-JSON format. 
-                So by specifying 'application/json', the Response will guaranteed be returned in JSON format
-                */
-
-                'Authorization': this.getToken(),
-                'Content-Type': 'application/json'
-            },
-        })
-
-        const orderResponseJSON = await createOrderResponse.json()//Retrieve the JSON from the Create Order response
-        orderID = await orderResponseJSON.orders[0] //Extract the order ID that we need to check from the JSON
-        console.log("JSON: "+ orderResponseJSON)
-        console.log("Order ID (Global): " + orderID)
+                "Authorization": this.getToken(),
+                "Content-Type": "application/json"
+            }
+        }
+        )
+        
+        const orderResponseJSON = await orderResponse.json()
+        orderID = orderResponseJSON.orders[0]
 
         return orderID;
     }
+    
 }
 
-//This line is IMPORTANT to allow other scripts to import and make use of the functions of this entire class. Without exporting, we cannot import it.
-module.exports = {APIUtils};
+module.exports = {APIUtils}; //This is to export the APIUtils class so that it can be used globally (used by other test scripts)

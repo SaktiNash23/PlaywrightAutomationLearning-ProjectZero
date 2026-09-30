@@ -1,12 +1,6 @@
 const {test, expect, request} = require('@playwright/test');//"request" library is needed to work with API testing
 const {APIUtils} = require('./utils/APIUtils');//Importing the APIUtils class so we can create new objects of APIUtils class
 
-
-//This is JSON information from the login network call's Payload tab. Needed for the POST request in the Login process
-const loginPayload = {userEmail: "sativel@hotmail.com",userPassword: "Newpassword1"}
-const orderPayload = {orders: [{country: "Bahamas", productOrderedId: "6960eac0c941646b7a8b3e68"}]}
-let orderID
-
 /*
 const createOrderPayload = {orders: [{country: "Bahamas", productOrderedId: "6960eac0c941646b7a8b3e68"}]}
 
@@ -102,20 +96,22 @@ test("Client App E2E Tests w/ auto-Login via API call", async ({page})=>
 //Authorization Header: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTAyOWY0ZGY2NjlkNmNiMGEzNTMyYWUiLCJ1c2VyRW1haWwiOiJzYXRpdmVsQGhvdG1haWwuY29tIiwidXNlck1vYmlsZSI6MTIzNDU2Nzg5MCwidXNlclJvbGUiOiJjdXN0b21lciIsImlhdCI6MTc3NDIzNjQyMywiZXhwIjoxODA1Nzk0MDIzfQ.Ap7saBlaobnXAps31togrGT64brUQJn78VwAyQn6NSc
 //Content Type: application/json
 
-
+//This is JSON information from the login network call's Payload tab. Needed for the POST request in the Login process
+const loginPayload = {userEmail: "sativel@hotmail.com",userPassword: "Newpassword1"}
+const orderPayload = {orders: [{country: "Bahamas", productOrderedId: "6960eac0c941646b7a8b3e68"}]}
 
 
 //FOR UDEMY FOLLOW-ALONG
+let response = {};//To hold the return value of response from APIUtils.createOrder() method. And then we can call it in the test case below.
 test.beforeAll(async ()=>
 {
     const apiContext = await request.newContext() //The step to create a new API context must be done in the actual test script, not in the APIUtils class, because we need to pass the actual API Context to the Class constructor
 
     const apiUtils = new APIUtils(loginPayload, apiContext) //Create a new object of the APIUtils class, and pass the loginPayload and apiContext to the constructor of the APIUtils class
-    apiUtils.createOrder(orderPayload) //Call the createOrder() method of the APIUtils class, and pass the orderPayload to it. This will create an order and return the order ID
+    response = await apiUtils.createOrder(orderPayload) //Call the createOrder() method of the APIUtils class, and pass the orderPayload to it. This will create an order and return the order ID
 
     
 });
-
 
 
 test("Client App E2E Tests w/ API", async ({browser, page})=>
@@ -124,29 +120,29 @@ test("Client App E2E Tests w/ API", async ({browser, page})=>
     await page.addInitScript(value =>
     {
         window.localStorage.setItem("token", value);
-    },  tokenGlobal);
+    },  response.token);
 
     await page.goto("https://rahulshettyacademy.com/client/")
 
     //ORDERS PAGE
     await page.locator("button[routerlink*='myorders']").click()
     await page.locator("div h1.ng-star-inserted").waitFor()
-    const orderList = page.locator("tr.ng-star-inserted")
+    const orderList = await page.locator("tr.ng-star-inserted")
     const orderListCount = await orderList.count()
 
     for(let i = 0; i < orderListCount; i++)
     {
         let rowOrderID = await orderList.locator("th").nth(i).textContent()
-        if(orderID.includes(rowOrderID))
+        if(response.orderID.includes(rowOrderID))
         {
-            console.log(await orderList.locator("th").nth(i).textContent())
+            console.log("Order Found: " + await orderList.locator("th").nth(i).textContent())
             await orderList.locator("td button.btn").first().click()
             break;
         }
     }
 
     const orderIdDetails = await page.locator("div.col-text").textContent()
-    expect(orderID.includes(orderIdDetails)).toBeTruthy()
+    expect(response.orderID.includes(orderIdDetails)).toBeTruthy()
 
     await page.pause()
 

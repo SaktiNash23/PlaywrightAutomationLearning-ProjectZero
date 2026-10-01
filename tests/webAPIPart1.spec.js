@@ -102,13 +102,13 @@ const orderPayload = {orders: [{country: "Bahamas", productOrderedId: "6960eac0c
 
 
 //FOR UDEMY FOLLOW-ALONG
-let response = {};//To hold the return value of response from APIUtils.createOrder() method. And then we can call it in the test case below.
+let response = {};//Object to hold the return value of response from APIUtils.createOrder() method. And then we can call it in the test case below.
 test.beforeAll(async ()=>
 {
     const apiContext = await request.newContext() //The step to create a new API context must be done in the actual test script, not in the APIUtils class, because we need to pass the actual API Context to the Class constructor
 
     const apiUtils = new APIUtils(loginPayload, apiContext) //Create a new object of the APIUtils class, and pass the loginPayload and apiContext to the constructor of the APIUtils class
-    response = await apiUtils.createOrder(orderPayload) //Call the createOrder() method of the APIUtils class, and pass the orderPayload to it. This will create an order and return the order ID
+    response = await apiUtils.createOrder(orderPayload) //Call the createOrder() method of the APIUtils class, and pass the orderPayload to it. This will create an order and return an object with token and orderID.
 
     
 });
@@ -117,6 +117,7 @@ test.beforeAll(async ()=>
 test("Client App E2E Tests w/ API", async ({browser, page})=>
 {
 
+    //Before going to the URL, set the token in the localStorage so that we don't need to login manually.
     await page.addInitScript(value =>
     {
         window.localStorage.setItem("token", value);
